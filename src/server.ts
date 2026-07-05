@@ -1,49 +1,49 @@
 import * as net from "net";
+import { soInit, soRead, soWrite, TCPConn } from "./tcp";
 
-// Create a TCP server
-const server = net.createServer();
+// Handle one client
+async function serveClient(socket: net.Socket): Promise<void> {
+    const conn: TCPConn = soInit(socket);
 
-// Handle new client connections
-server.on("connection", (socket) => {
+    while (true) {
+        const data = await soRead(conn);
+
+        // Empty buffer means EOF
+        if (data.length === 0) {
+            console.log("🔌 Client disconnected");
+            break;
+        }
+
+        console.log("📩 Received:", data.toString());
+
+        await soWrite(conn, data);
+    }
+}
+
+// Called whenever a client connects
+async function newConn(socket: net.Socket): Promise<void> {
     console.log("🎉 New client connected!");
     console.log("IP Address:", socket.remoteAddress);
     console.log("Port:", socket.remotePort);
 
-    // Receive data from the client
-   
-    socket.on("data", (data: Buffer) => {
-        console.log("Buffer:", data);
-        console.log("Hex:", data.toString("hex"));
-        console.log("Text:", JSON.stringify(data.toString()));
-        console.log("Length:", data.length);
-
-          // Echo the data back to the client
-        socket.write("I received your message!\n");
-});
-       
-    // Client closed the connection
-    socket.on("end", () => {
-        console.log("👋 Client disconnected.");
-    });
-
-    // Handle socket errors
-    socket.on("error", (err) => {
-        console.error("❌ Socket Error:", err.message);
-    });
-});
-
-// Handle server errors
-server.on("error", (err) => {
-    console.error("❌ Server Error:", err.message);
-});
-
-// Start listening
-server.listen(
-    {
-        host: "127.0.0.1",
-        port: 1234,
-    },
-    () => {
-        console.log("🚀 HTTPForge is running on 127.0.0.1:1234");
+    try {
+        await serveClient(socket);
+    } catch (err) {
+        console.error("❌ Error:", err);
+    } finally {
+        socket.destroy();
     }
-);
+}
+
+// Create server
+const server = net.createServer({
+    pauseOnConnect: true,
+});
+
+server.on("connection", (socket) => {
+    newConn(socket);
+});
+
+server.listen(1234, "127.0.0.1", () => {
+    console.log("🚀 HTTPForge is running on 127.0.0.1:1234");
+});
