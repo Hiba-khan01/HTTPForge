@@ -1,29 +1,56 @@
 import * as net from "net";
 import { soInit, soRead, soWrite, TCPConn } from "./tcp";
+import { DynBuf, bufPush } from "./dynbuf";
+import { cutMessage } from "./protocol";
 
 // Handle one client
 async function serveClient(socket: net.Socket): Promise<void> {
     const conn: TCPConn = soInit(socket);
 
-    while (true) {
-        const data = await soRead(conn);
+    const buf: DynBuf = {
+        data: Buffer.alloc(0),
+        length: 0,
+    };
 
-        // Empty buffer means EOF
-        if (data.length === 0) {
-            console.log("🔌 Client disconnected");
-            break;
+    while (true) {
+        // Try to extract one complete message
+        const msg = cutMessage(buf);
+
+        if (!msg) {
+            // Need more data
+            const data = await soRead(conn);
+
+            bufPush(buf, data);
+
+            // EOF
+            if (data.length === 0) {
+                console.log("🔌 Client disconnected");
+                return;
+            }
+
+            continue;
         }
 
-        console.log("📩 Received:", data.toString());
+       // Process message
+        const text = msg.toString().trim();
 
-        await soWrite(conn, data);
-    }
+        console.log(JSON.stringify(text));
+
+        if (text === "quit") {
+            await soWrite(conn, Buffer.from("Bye.\n"));
+            socket.destroy();
+            return;
+        } else {
+            const reply = Buffer.from(`Echo: ${text}\n`);
+            await soWrite(conn, reply);
+        }
+            }
 }
 
-// Called whenever a client connects
+// Handle new connection
 async function newConn(socket: net.Socket): Promise<void> {
-    console.log("🎉 New client connected!");
-    console.log("IP Address:", socket.remoteAddress);
+    console.log("🎉 New Client Connected");
+    console.log("IP:", socket.remoteAddress);
     console.log("Port:", socket.remotePort);
 
     try {
@@ -35,15 +62,15 @@ async function newConn(socket: net.Socket): Promise<void> {
     }
 }
 
-// Create server
+// Create TCP server
 const server = net.createServer({
     pauseOnConnect: true,
 });
 
 server.on("connection", (socket) => {
-    newConn(socket);
+    void newConn(socket);
 });
 
 server.listen(1234, "127.0.0.1", () => {
-    console.log("🚀 HTTPForge is running on 127.0.0.1:1234");
+    console.log("🚀 HTTPForge running on 127.0.0.1:1234");
 });

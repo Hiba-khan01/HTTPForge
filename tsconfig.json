@@ -14,6 +14,6 @@
     "skipLibCheck": true
   },
 
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "playground/promise-test.ts", "playground/promise-demo.ts"],
   "exclude": ["node_modules"]
 }
