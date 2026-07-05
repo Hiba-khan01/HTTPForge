@@ -1,0 +1,1 @@
+TCP is a reliable byte stream, not a message protocol. Applications must define their own message boundaries.
