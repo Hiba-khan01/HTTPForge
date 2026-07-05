@@ -1,86 +1,66 @@
 # 🚀 HTTPForge
 
-> Building an HTTP/1.1 Server from Scratch using **Node.js** and **TypeScript**
+> Building an HTTP/1.1 server from scratch using Node.js and TypeScript.
 
-HTTPForge is my journey of building an HTTP server completely from scratch without using frameworks like Express or Fastify. The goal of this project is to understand how networking, TCP sockets, protocols, and HTTP work under the hood by implementing everything step by step.
+HTTPForge is a project where I'm building an HTTP server from scratch to better understand how web servers and networking work behind the scenes.
 
----
+Instead of relying on frameworks like Express, I'm implementing everything step by step—from TCP sockets to HTTP parsing—to learn how requests travel through the network and how servers process them internally.
 
-## 📖 About the Project
-
-Most developers use web frameworks every day but never see how they actually work internally.
-
-HTTPForge focuses on learning the fundamentals by implementing:
-
-- TCP Socket Programming
-- Event-driven Networking
-- Promise-based Socket APIs
-- Custom Network Protocols
-- HTTP/1.1
-- Static File Serving
-- Caching
-- Compression
-- WebSockets
-
-Everything is built incrementally.
+This repository will be updated as I progress through each chapter.
 
 ---
 
-## ✨ Features Implemented
+## 📚 Project Goals
 
-### ✅ Chapter 1 – Introduction
-
-- Project setup
-- Networking fundamentals
-- Understanding how web servers work
-
----
-
-### ✅ Chapter 2 – HTTP Overview
-
-- HTTP Request structure
-- HTTP Response structure
-- HTTP Versions
-- Request/Response lifecycle
+- Understand TCP socket programming
+- Learn how HTTP works internally
+- Build an HTTP/1.1 server from scratch
+- Learn asynchronous programming with Promises and async/await
+- Understand protocol parsing and network communication
+- Explore concepts like buffering, caching, compression, and WebSockets
 
 ---
 
-### ✅ Chapter 3 – TCP Echo Server
+## 🛠️ Tech Stack
 
-- TCP Server
-- Socket Programming
-- Reading Buffers
-- Writing Buffers
-- Echo Server implementation
+- **Language:** TypeScript
+- **Runtime:** Node.js
+- **Networking:** Node.js `net` module
 
 ---
 
-### ✅ Chapter 4 – Promise-based TCP API
+## ✅ Progress
 
-- Promise wrapper around TCP sockets
-- `async / await`
-- Event → Promise conversion
-- Backpressure (`pause()` / `resume()`)
-- `soRead()`
-- `soWrite()`
-- Async Echo Server
+### Chapter 1 – Introduction
+- ✔ Project setup
+- ✔ Networking fundamentals
+
+### Chapter 2 – HTTP Overview
+- ✔ HTTP requests and responses
+- ✔ HTTP versions
+- ✔ Understanding the request-response lifecycle
+
+### Chapter 3 – TCP Echo Server
+- ✔ Built a TCP server
+- ✔ Worked with sockets and buffers
+- ✔ Implemented an echo server
+
+### Chapter 4 – Promise-based TCP API
+- ✔ Promise wrapper around TCP sockets
+- ✔ async/await
+- ✔ Event → Promise conversion
+- ✔ Backpressure using `pause()` and `resume()`
+- ✔ Async echo server
+
+### Chapter 5 – Simple Network Protocol
+- ✔ Dynamic buffer implementation
+- ✔ Message parsing
+- ✔ Newline-delimited protocol
+- ✔ Handling multiple messages over a single TCP connection
 
 ---
 
-### ✅ Chapter 5 – Simple Network Protocol
-
-- Dynamic Buffer implementation
-- Growing Buffers
-- Buffer Push
-- Buffer Pop
-- Message Parser
-- Newline-delimited Protocol
-- Multiple Message Handling
-- Pipelined Requests
-
----
-
-## 🚧 Upcoming Features
+## 🚧 Coming Next
 
 - HTTP Request Parser
 - HTTP Response Generator
@@ -92,35 +72,19 @@ Everything is built incrementally.
 - Compression
 - Streams
 - WebSockets
-- Logging
-- Performance Improvements
 
 ---
 
-# 🛠️ Tech Stack
+## 📂 Project Structure
 
-| Technology | Purpose |
-|------------|---------|
-| TypeScript | Programming Language |
-| Node.js | Runtime |
-| net Module | TCP Networking |
-| npm | Package Manager |
-
----
-
-# 📂 Project Structure
-
-```
-HTTPForge
+```text
+HTTPForge/
 │
-├── src
+├── src/
 │   ├── server.ts
 │   ├── tcp.ts
 │   ├── dynbuf.ts
 │   └── protocol.ts
-│
-├── playground
-│   └── promise-demo.ts
 │
 ├── package.json
 ├── tsconfig.json
@@ -130,55 +94,45 @@ HTTPForge
 
 ---
 
-# 🚀 Getting Started
+## 🚀 Getting Started
 
-## Clone the Repository
+Clone the repository
 
 ```bash
 git clone https://github.com/Hiba-khan01/HTTPForge.git
 cd HTTPForge
 ```
 
----
-
-## Install Dependencies
+Install dependencies
 
 ```bash
 npm install
 ```
 
----
-
-## Run the Server
+Run the server
 
 ```bash
 npx tsx src/server.ts
 ```
 
-Expected output
-
-```
-🚀 HTTPForge running on 127.0.0.1:1234
-```
-
 ---
 
-# 🧪 Testing
+## 🧪 Testing
 
-Connect to the server using **Ncat**.
+Connect using Ncat:
 
 ```bash
 ncat 127.0.0.1 1234
 ```
 
-Example
+Example:
 
-```
+```text
 hello
 Echo: hello
 
-hii
-Echo: hii
+how are you
+Echo: how are you
 
 quit
 Bye.
@@ -186,28 +140,24 @@ Bye.
 
 ---
 
-# 📚 What I'm Learning
+## 📖 What I'm Learning
 
-This project covers
+This project is helping me understand:
 
 - TCP Socket Programming
-- Event Loop
-- Buffers
-- Dynamic Buffers
-- Streams
-- Promise-based APIs
-- Async/Await
-- Backpressure
+- Buffers & Dynamic Buffers
+- Event-driven Programming
+- Promises & async/await
 - Protocol Design
 - HTTP Internals
 - Network Programming
 
 ---
 
-# 📈 Progress
+## 📈 Current Progress
 
 ```
-█████░░░░░░░░░░░░░░ 5 / 14 Chapters
+█████░░░░░░░░░░░░░░
 
 ✅ Chapter 1
 ✅ Chapter 2
@@ -227,55 +177,19 @@ This project covers
 
 ---
 
-# 🎯 Current Milestone
+## 🎯 Why I Started This Project
 
-✅ Implemented a custom newline-delimited network protocol using dynamic buffers.
-
-**Next Goal:**
-
-➡️ Build an HTTP/1.1 Request Parser
+I wanted to go beyond using web frameworks and understand how they actually work internally. Building an HTTP server from scratch is helping me learn networking, asynchronous programming, and the HTTP protocol in a much deeper way.
 
 ---
 
-# 📸 Demo
+## 📚 Learning Resource
 
-```
-Client
-│
-├── hello
-│
-└── Echo: hello
-
-Client
-│
-├── hii
-│
-└── Echo: hii
-
-Client
-│
-├── quit
-│
-└── Bye.
-```
+This project follows the concepts from the **Build Your Own Web Server** book. I'm implementing the code myself while working through each chapter and understanding the underlying concepts.
 
 ---
 
-# 🎓 Learning Resource
-
-This project is inspired by the concepts from the **Build Your Own Web Server** book and is implemented independently as a learning exercise.
-
----
-
-# 🤝 Contributing
-
-Suggestions, improvements, and discussions are always welcome.
-
-Feel free to fork the repository and open a Pull Request.
-
----
-
-# 👩‍💻 Author
+## 👩‍💻 Author
 
 **Hiba Khan**
 
@@ -283,6 +197,4 @@ GitHub: **https://github.com/Hiba-khan01**
 
 ---
 
-# ⭐ Support
-
-If you found this project interesting or helpful, consider giving it a ⭐ on GitHub.
+⭐ If you find this project interesting, feel free to star the repository.
