@@ -11,7 +11,6 @@ export async function writeHTTPResp(
         throw new Error("TODO: chunked encoding");
     }
 
-    // Add Content-Length
     console.assert(
         !fieldGet(resp.headers, "Content-Length")
     );
@@ -22,28 +21,34 @@ export async function writeHTTPResp(
         )
     );
 
-    // Send header
     await soWrite(conn, encodeHTTPResp(resp));
 
-    // Send body
-    while (true) {
-        const data = await resp.body.read();
+    try {
 
-        if (data.length === 0) {
-            break;
+        while (true) {
+
+            const chunk =
+                await resp.body.read();
+
+            if (chunk.length === 0) {
+                break;
+            }
+
+            await soWrite(conn, chunk);
         }
 
-        await soWrite(conn, data);
+    } finally {
+
+        if (resp.body.close) {
+            await resp.body.close();
+        }
     }
 }
 
-// Encode HTTP response header
 function encodeHTTPResp(resp: HTTPRes): Buffer {
 
-    const reason = statusText(resp.code);
-
     let out =
-        `HTTP/1.1 ${resp.code} ${reason}\r\n`;
+        `HTTP/1.1 ${resp.code} ${statusText(resp.code)}\r\n`;
 
     for (const h of resp.headers) {
         out += h.toString("latin1") + "\r\n";
@@ -54,7 +59,6 @@ function encodeHTTPResp(resp: HTTPRes): Buffer {
     return Buffer.from(out, "latin1");
 }
 
-// Find a header field
 function fieldGet(
     headers: Buffer[],
     key: string
@@ -73,9 +77,12 @@ function fieldGet(
         }
 
         const name =
-            text.slice(0, idx).trim().toLowerCase();
+            text.slice(0, idx)
+                .trim()
+                .toLowerCase();
 
         if (name === key) {
+
             return Buffer.from(
                 text.slice(idx + 1).trim(),
                 "latin1"
@@ -86,7 +93,6 @@ function fieldGet(
     return null;
 }
 
-// HTTP status text
 function statusText(code: number): string {
 
     switch (code) {

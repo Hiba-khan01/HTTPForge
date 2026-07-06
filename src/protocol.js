@@ -29,14 +29,17 @@ function parseHTTPReq(data) {
     }
     const [method, uri, version] = parseRequestLine(lines[0]);
     const headers = [];
-    for (let i = 1; i < lines.length - 1; i++) {
+    for (let i = 1; i < lines.length; i++) {
         const h = Buffer.from(lines[i]);
+        // Skip the empty line(s) at the end of the header
+        if (h.length === 0) {
+            continue;
+        }
         if (!validateHeader(h)) {
             throw new http_1.HTTPError(400, "bad field");
         }
         headers.push(h);
     }
-    console.assert(lines[lines.length - 1].length === 0);
     return {
         method,
         uri,

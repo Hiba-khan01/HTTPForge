@@ -2,7 +2,7 @@
 // HTTP Types
 // ===============================
 
-// Parsed HTTP request header
+// Parsed HTTP request
 export type HTTPReq = {
     method: string;
     uri: Buffer;
@@ -10,25 +10,40 @@ export type HTTPReq = {
     headers: Buffer[];
 };
 
-// Interface for reading an HTTP body
-export type BodyReader = {
-    // Content-Length (-1 if unknown)
-    length: number;
+// Generic body reader.
+//
+// A BodyReader can represent:
+//
+// - Memory
+// - Request body
+// - File
+// - Gzip stream (future)
+// - Chunked transfer (future)
+export interface BodyReader {
 
-    // Returns an empty Buffer on EOF
-    read: () => Promise<Buffer>;
-};
+    // Total body length.
+    // -1 means unknown length.
+    readonly length: number;
 
-// HTTP response
-export type HTTPRes = {
+    // Read the next chunk.
+    // Returns an empty Buffer on EOF.
+    read(): Promise<Buffer>;
+
+    // Optional cleanup.
+    close?(): Promise<void>;
+}
+
+// HTTP Response
+export interface HTTPRes {
     code: number;
     headers: Buffer[];
     body: BodyReader;
-};
+}
 
 // Custom HTTP exception
 export class HTTPError extends Error {
-    code: number;
+
+    readonly code: number;
 
     constructor(code: number, message: string) {
         super(message);

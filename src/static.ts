@@ -1,7 +1,8 @@
 import { promises as fs } from "fs";
 import * as path from "path";
+
 import { HTTPRes } from "./http";
-import { readerFromMemory } from "./body";
+import { readerFromFile } from "./body";
 import { getMimeType } from "./mime";
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
@@ -18,17 +19,27 @@ export async function serveStatic(
         reqPath = "/index.html";
     }
 
-    // Prevent directory traversal attacks
+    // Directory index
+    if (reqPath.endsWith("/")) {
+        reqPath += "index.html";
+    }
+
     const filePath = path.normalize(
         path.join(PUBLIC_DIR, reqPath)
     );
 
+    // Prevent directory traversal
     if (!filePath.startsWith(PUBLIC_DIR)) {
         return null;
     }
 
     try {
-        const data = await fs.readFile(filePath);
+
+        const stat = await fs.stat(filePath);
+
+        if (!stat.isFile()) {
+            return null;
+        }
 
         return {
             code: 200,
@@ -38,8 +49,9 @@ export async function serveStatic(
                     `Content-Type: ${getMimeType(filePath)}`
                 ),
             ],
-            body: readerFromMemory(data),
+            body: await readerFromFile(filePath),
         };
+
     } catch {
         return null;
     }
