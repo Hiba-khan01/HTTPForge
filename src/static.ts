@@ -1,7 +1,8 @@
 import { promises as fs } from "fs";
 import * as path from "path";
-import { BodyReader, HTTPRes } from "./http";
+import { HTTPRes } from "./http";
 import { readerFromMemory } from "./body";
+import { getMimeType } from "./mime";
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 
@@ -12,11 +13,19 @@ export async function serveStatic(
 
     let reqPath = uri.toString("latin1");
 
+    // Default route
     if (reqPath === "/") {
         reqPath = "/index.html";
     }
 
-    const filePath = path.join(PUBLIC_DIR, reqPath);
+    // Prevent directory traversal attacks
+    const filePath = path.normalize(
+        path.join(PUBLIC_DIR, reqPath)
+    );
+
+    if (!filePath.startsWith(PUBLIC_DIR)) {
+        return null;
+    }
 
     try {
         const data = await fs.readFile(filePath);
@@ -25,6 +34,9 @@ export async function serveStatic(
             code: 200,
             headers: [
                 Buffer.from("Server: HTTPForge"),
+                Buffer.from(
+                    `Content-Type: ${getMimeType(filePath)}`
+                ),
             ],
             body: readerFromMemory(data),
         };
