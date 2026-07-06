@@ -1,3 +1,6 @@
 node_modules/
+*.js
+*.d.ts
+*.d.ts.map
+*.js.map
 dist/
-.env

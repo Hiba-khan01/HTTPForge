@@ -1,5 +1,6 @@
 import { HTTPReq, HTTPRes, BodyReader } from "./http";
 import { readerFromMemory } from "./body";
+import { serveStatic } from "./static";
 
 // Handle one HTTP request
 export async function handleReq(
@@ -7,28 +8,34 @@ export async function handleReq(
     body: BodyReader
 ): Promise<HTTPRes> {
 
-    let respBody: BodyReader;
-
-    switch (req.uri.toString("latin1")) {
-
-        case "/echo":
-            // Echo request body
-            respBody = body;
-            break;
-
-        default:
-            // Default response
-            respBody = readerFromMemory(
-                Buffer.from("hello world.\n")
-            );
-            break;
+    // Echo endpoint
+    if (req.uri.toString("latin1") === "/echo") {
+        return {
+            code: 200,
+            headers: [
+                Buffer.from("Server: HTTPForge"),
+                Buffer.from("Content-Type: text/plain"),
+            ],
+            body: body,
+        };
     }
 
+    // Try serving a static file
+    const file = await serveStatic(req.uri);
+
+    if (file) {
+        return file;
+    }
+
+    // 404 Not Found
     return {
-        code: 200,
+        code: 404,
         headers: [
             Buffer.from("Server: HTTPForge"),
+            Buffer.from("Content-Type: text/plain"),
         ],
-        body: respBody,
+        body: readerFromMemory(
+            Buffer.from("404 Not Found\n")
+        ),
     };
 }
