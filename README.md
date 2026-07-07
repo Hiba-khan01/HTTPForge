@@ -1,64 +1,87 @@
 # 🚀 HTTPForge
 
-> Building an HTTP/1.1 server from scratch using Node.js and TypeScript.
+HTTPForge is a lightweight HTTP/1.1 server built completely from scratch using **TypeScript** and **Node.js TCP sockets**. The goal of this project was to understand how HTTP works internally instead of relying on frameworks like Express or Node's built-in HTTP module.
 
-HTTPForge is a personal project where I'm building an HTTP server from scratch to understand how networking and web servers work internally. Instead of using frameworks like Express, this project focuses on implementing the core building blocks of an HTTP server using low-level TCP sockets.
+This project implements core HTTP features such as request parsing, persistent connections, static file serving, byte-range requests, and HTTP caching.
 
 ---
 
 ## ✨ Features
 
-- TCP socket communication
-- Promise-based asynchronous networking
-- Dynamic buffer implementation
-- Custom message framing protocol
-- HTTP/1.1 request parsing
-- HTTP response generation
-- Request body streaming
-- Persistent HTTP/1.1 connections
-- HTTP error handling
-- Echo endpoint (`/echo`)
-
----
-
-## 🛠 Tech Stack
-
-- TypeScript
-- Node.js
-- Node.js `net` module
+- HTTP/1.1 server built on raw TCP sockets
+- Persistent (Keep-Alive) connections
+- Custom HTTP request parser
+- HTTP response generator
+- Static file server
+- MIME type detection
+- File streaming using custom BodyReader
+- Automatic directory listing
+- HTTP Range Requests (`206 Partial Content`)
+- HTTP Caching
+  - ETag
+  - Last-Modified
+  - If-None-Match
+  - 304 Not Modified responses
+- Protection against directory traversal attacks
+- Simple `/echo` endpoint for testing request bodies
 
 ---
 
 ## 📂 Project Structure
 
-```text
-HTTPForge/
-│
-├── src/
-│   ├── body.ts
-│   ├── dynbuf.ts
-│   ├── handler.ts
-│   ├── http.ts
-│   ├── protocol.ts
-│   ├── response.ts
-│   ├── server.ts
-│   └── tcp.ts
-│
-├── README.md
-├── LICENSE
-├── package.json
-└── tsconfig.json
+```
+src/
+├── body.ts
+├── directory.ts
+├── dynbuf.ts
+├── handler.ts
+├── http.ts
+├── mime.ts
+├── protocol.ts
+├── response.ts
+├── server.ts
+├── static.ts
+├── tcp.ts
+└── utils.ts
+
+public/
+├── index.html
+├── test.txt
+└── assets/
 ```
 
 ---
 
-## 🚀 Getting Started
+## ⚙️ How it Works
+
+1. Accepts TCP connections.
+2. Reads incoming bytes from the socket.
+3. Parses HTTP requests.
+4. Routes the request.
+5. Serves static files or dynamic responses.
+6. Streams files in chunks.
+7. Supports HTTP caching and byte-range requests.
+8. Sends a valid HTTP response back to the client.
+
+---
+
+## 🛠️ Technologies Used
+
+- TypeScript
+- Node.js
+- TCP Sockets
+- HTTP/1.1
+
+No external web frameworks were used.
+
+---
+
+## 🚀 Running the Project
 
 Clone the repository
 
 ```bash
 git clone https://github.com/Hiba-khan01/HTTPForge.git
-cd HTTPForge
 ```
 
 Install dependencies
@@ -67,86 +90,107 @@ Install dependencies
 npm install
 ```
 
-Run the server
+Start the server
 
 ```bash
 npx tsx src/server.ts
+```
+
+The server starts on
+
+```
+http://127.0.0.1:1234
 ```
 
 ---
 
 ## 🧪 Example Requests
 
-### Default Route
+Homepage
 
 ```bash
-curl.exe http://127.0.0.1:1234
+curl http://127.0.0.1:1234
 ```
 
-Response
-
-```text
-hello world.
-```
-
-### Echo Endpoint
+Serve a file
 
 ```bash
-curl.exe --data-binary "hello" http://127.0.0.1:1234/echo
+curl http://127.0.0.1:1234/test.txt
 ```
 
-Response
+Directory listing
 
-```text
-hello
+```bash
+curl http://127.0.0.1:1234/assets/
+```
+
+Echo endpoint
+
+```bash
+curl --data-binary "Hello HTTPForge" http://127.0.0.1:1234/echo
+```
+
+HTTP Range Request
+
+```bash
+curl -H "Range: bytes=0-4" http://127.0.0.1:1234/test.txt
+```
+
+HTTP Caching
+
+```bash
+curl -I http://127.0.0.1:1234/test.txt
+```
+
+```bash
+curl -H "If-None-Match: <etag>" http://127.0.0.1:1234/test.txt
 ```
 
 ---
 
-## 📖 What I'm Learning
+## 📸 Features Demonstrated
 
-This project focuses on understanding how an HTTP server works internally, including:
+- Static HTML pages
+- File downloads
+- Directory browsing
+- Partial content delivery
+- Browser caching support
+- Streaming large files
 
+---
+
+## 📈 What I Learned
+
+Building HTTPForge helped me understand:
+
+- How HTTP requests and responses are structured
 - TCP socket programming
+- Parsing raw network data
 - Buffer management
-- Asynchronous I/O
-- HTTP/1.1 protocol
-- Request parsing
-- Response generation
-- Streaming request bodies
-- Persistent connections
-- Network protocol design
+- File streaming
+- HTTP status codes
+- HTTP headers
+- MIME types
+- Byte-range requests
+- Browser caching using ETag and Last-Modified
 
 ---
 
-## 🚧 Roadmap
+## 🔮 Future Improvements
 
-- ✅ TCP networking
-- ✅ HTTP request parsing
-- ✅ HTTP response generation
-- ✅ Request body handling
-- ✅ Echo endpoint
-- ⏳ Static file server
-- ⏳ MIME type detection
-- ⏳ Chunked transfer encoding
-- ⏳ Compression
-- ⏳ Caching
-- ⏳ WebSockets
+- Gzip Compression
+- Chunked Transfer Encoding
+- Request Logging
+- Docker Support
+- Unit Tests
+- GitHub Actions CI
 
 ---
 
-## 📚 Learning Resource
+## 📄 License
 
-This project is inspired by the concepts from the **Build Your Own Web Server** book. The implementation is written from scratch in TypeScript while following the ideas presented in the book.
-
----
-
-## 👩‍💻 Author
-
-**Hiba Khan**
-
-GitHub: https://github.com/Hiba-khan01
+This project is licensed under the MIT License.
 
 ---
 
-⭐ If you like the project, consider giving it a star.
+If you found this project interesting, feel free to ⭐ the repository.
