@@ -1,6 +1,8 @@
 // Utility functions for HTTP parsing
 
+// ===============================
 // Split an HTTP header into CRLF-separated lines
+// ===============================
 export function splitLines(data: Buffer): Buffer[] {
     return data
         .toString("latin1")
@@ -8,8 +10,11 @@ export function splitLines(data: Buffer): Buffer[] {
         .map(line => Buffer.from(line, "latin1"));
 }
 
-// Parse request line:
+// ===============================
+// Parse request line
+// Example:
 // GET / HTTP/1.1
+// ===============================
 export function parseRequestLine(
     line: Buffer
 ): [string, Buffer, string] {
@@ -33,14 +38,93 @@ export function parseRequestLine(
     ];
 }
 
-// Basic validation for header fields
+// ===============================
+// Validate HTTP header
+// ===============================
 export function validateHeader(header: Buffer): boolean {
+
     const text = header.toString("latin1");
+
     const idx = text.indexOf(":");
 
-    if (idx <= 0) {
-        return false;
+    return idx > 0;
+}
+
+// ===============================
+// HTTP Range
+// bytes=start-end
+// ===============================
+
+export interface HTTPRange {
+    start: number;
+    end: number;
+}
+
+// Parse:
+//
+// Range: bytes=100-500
+//
+// Returns:
+//
+// { start:100, end:500 }
+//
+// or null if header doesn't exist.
+export function parseRangeHeader(
+    headers: Buffer[]
+): HTTPRange | null {
+
+    for (const h of headers) {
+
+        const text = h.toString("latin1");
+
+        if (!text.toLowerCase().startsWith("range:")) {
+            continue;
+        }
+
+        const value = text
+            .substring(text.indexOf(":") + 1)
+            .trim();
+
+        if (!value.startsWith("bytes=")) {
+            return null;
+        }
+
+        const range =
+            value.substring(6);
+
+        const dash =
+            range.indexOf("-");
+
+        if (dash < 0) {
+            return null;
+        }
+
+        const start =
+            Number.parseInt(
+                range.substring(0, dash),
+                10
+            );
+
+        const end =
+            Number.parseInt(
+                range.substring(dash + 1),
+                10
+            );
+
+        if (
+            Number.isNaN(start) ||
+            Number.isNaN(end) ||
+            start < 0 ||
+            end < start
+        ) {
+            return null;
+        }
+
+        return {
+            start,
+            end,
+        };
     }
 
-    return true;
+    return null;
 }
