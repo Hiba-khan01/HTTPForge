@@ -1,5 +1,7 @@
 // Utility functions for HTTP parsing
 
+import { Stats } from "fs";
+
 // ===============================
 // Split an HTTP header into CRLF-separated lines
 // ===============================
@@ -12,8 +14,6 @@ export function splitLines(data: Buffer): Buffer[] {
 
 // ===============================
 // Parse request line
-// Example:
-// GET / HTTP/1.1
 // ===============================
 export function parseRequestLine(
     line: Buffer
@@ -39,20 +39,19 @@ export function parseRequestLine(
 }
 
 // ===============================
-// Validate HTTP header
+// Validate header
 // ===============================
-export function validateHeader(header: Buffer): boolean {
+export function validateHeader(
+    header: Buffer
+): boolean {
 
     const text = header.toString("latin1");
 
-    const idx = text.indexOf(":");
-
-    return idx > 0;
+    return text.indexOf(":") > 0;
 }
 
 // ===============================
 // HTTP Range
-// bytes=start-end
 // ===============================
 
 export interface HTTPRange {
@@ -60,15 +59,6 @@ export interface HTTPRange {
     end: number;
 }
 
-// Parse:
-//
-// Range: bytes=100-500
-//
-// Returns:
-//
-// { start:100, end:500 }
-//
-// or null if header doesn't exist.
 export function parseRangeHeader(
     headers: Buffer[]
 ): HTTPRange | null {
@@ -77,7 +67,11 @@ export function parseRangeHeader(
 
         const text = h.toString("latin1");
 
-        if (!text.toLowerCase().startsWith("range:")) {
+        if (
+            !text
+                .toLowerCase()
+                .startsWith("range:")
+        ) {
             continue;
         }
 
@@ -89,11 +83,9 @@ export function parseRangeHeader(
             return null;
         }
 
-        const range =
-            value.substring(6);
+        const range = value.substring(6);
 
-        const dash =
-            range.indexOf("-");
+        const dash = range.indexOf("-");
 
         if (dash < 0) {
             return null;
@@ -120,10 +112,76 @@ export function parseRangeHeader(
             return null;
         }
 
-        return {
-            start,
-            end,
-        };
+        return { start, end };
+    }
+
+    return null;
+}
+
+// ===============================
+// Generate ETag
+// ===============================
+
+export function generateETag(
+    stat: Stats
+): string {
+
+    return `${stat.size}-${stat.mtimeMs}`;
+}
+
+// ===============================
+// Format Last-Modified
+// ===============================
+
+export function lastModified(
+    stat: Stats
+): string {
+
+    return stat.mtime.toUTCString();
+}
+
+// ===============================
+// Read a header
+// ===============================
+
+export function getHeader(
+    headers: Buffer[],
+    key: string
+): string | null {
+
+    key = key.toLowerCase();
+
+    for (const h of headers) {
+
+        const text = h.toString("latin1");
+
+        const idx = text.indexOf(":");
+
+        if (idx < 0) {
+            continue;
+        }
+
+        const name =
+            text
+                .slice(0, idx)
+                .trim()
+                .toLowerCase();
+
+        if (name === key) {
+
+            let value = text
+                .slice(idx + 1)
+                .trim();
+
+            if (
+                value.startsWith('"') &&
+                value.endsWith('"')
+            ) {
+                value = value.slice(1, -1);
+            }
+
+            return value;
+        }
     }
 
     return null;

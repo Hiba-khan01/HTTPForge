@@ -103,6 +103,9 @@ function statusText(code: number): string {
         case 206:
             return "Partial Content";
 
+        case 304:
+            return "Not Modified";
+
         case 400:
             return "Bad Request";
 
