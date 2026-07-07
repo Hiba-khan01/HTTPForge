@@ -5,7 +5,7 @@ import { DynBuf, bufPush, bufPop } from "./dynbuf";
 import { HTTPReq, BodyReader, HTTPError } from "./http";
 
 // ======================================================
-// Memory Body
+// Memory Body Reader
 // ======================================================
 
 export function readerFromMemory(data: Buffer): BodyReader {
@@ -13,6 +13,7 @@ export function readerFromMemory(data: Buffer): BodyReader {
     let done = false;
 
     return {
+
         length: data.length,
 
         async read(): Promise<Buffer> {
@@ -49,10 +50,10 @@ function fieldGet(
             continue;
         }
 
-        const name =
-            text.slice(0, idx)
-                .trim()
-                .toLowerCase();
+        const name = text
+            .slice(0, idx)
+            .trim()
+            .toLowerCase();
 
         if (name === key) {
 
@@ -71,7 +72,7 @@ function parseDec(text: string): number {
 }
 
 // ======================================================
-// HTTP Request Body
+// HTTP Request Body Reader
 // ======================================================
 
 export function readerFromReq(
@@ -135,21 +136,21 @@ function readerFromConnLength(
                 return Buffer.alloc(0);
             }
 
-            if (buf.length === 0) {
+            while (buf.length === 0) {
 
                 const data = await soRead(conn);
 
                 if (data.length === 0) {
-                    throw new Error(
-                        "Unexpected EOF"
-                    );
+                    throw new Error("Unexpected EOF");
                 }
 
                 bufPush(buf, data);
             }
 
-            const consume =
-                Math.min(remain, buf.length);
+            const consume = Math.min(
+                remain,
+                buf.length
+            );
 
             const chunk = Buffer.from(
                 buf.data.subarray(0, consume)
@@ -165,40 +166,59 @@ function readerFromConnLength(
 }
 
 // ======================================================
-// File Reader (NEW)
+// File Reader (supports byte ranges)
 // ======================================================
 
 export async function readerFromFile(
-    filePath: string
+    filePath: string,
+    range?: {
+        start: number;
+        end: number;
+    }
 ): Promise<BodyReader> {
 
-    const handle =
-        await fs.open(filePath, "r");
+    const handle = await fs.open(filePath, "r");
 
-    const stat =
-        await handle.stat();
+    const stat = await handle.stat();
 
-    let offset = 0;
+    const start =
+        range?.start ?? 0;
+
+    const end =
+        range?.end ?? (stat.size - 1);
+
+    if (
+        start < 0 ||
+        end < start ||
+        end >= stat.size
+    ) {
+
+        await handle.close();
+
+        throw new Error(
+            "Invalid byte range"
+        );
+    }
+
+    let offset = start;
 
     const CHUNK_SIZE = 64 * 1024;
+        return {
 
-    return {
-
-        length: stat.size,
+        length: end - start + 1,
 
         async read(): Promise<Buffer> {
 
-            if (offset >= stat.size) {
+            if (offset > end) {
                 return Buffer.alloc(0);
             }
 
             const size = Math.min(
                 CHUNK_SIZE,
-                stat.size - offset
+                end - offset + 1
             );
 
-            const buffer =
-                Buffer.alloc(size);
+            const buffer = Buffer.alloc(size);
 
             const { bytesRead } =
                 await handle.read(
@@ -216,8 +236,7 @@ export async function readerFromFile(
             );
         },
 
-        async close() {
-
+        async close(): Promise<void> {
             await handle.close();
         },
     };

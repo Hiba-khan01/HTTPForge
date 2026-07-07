@@ -9,25 +9,28 @@ export async function handleReq(
 ): Promise<HTTPRes> {
 
     // Echo endpoint
-    if (req.uri.toString("latin1") === "/echo") {
+    if (
+        req.method === "POST" &&
+        req.uri.toString("latin1") === "/echo"
+    ) {
         return {
             code: 200,
             headers: [
                 Buffer.from("Server: HTTPForge"),
                 Buffer.from("Content-Type: text/plain"),
             ],
-            body: body,
+            body,
         };
     }
 
-    // Try serving a static file
-    const file = await serveStatic(req.uri);
+    // Serve static files
+    const file = await serveStatic(req);
 
     if (file) {
         return file;
     }
 
-    // 404 Not Found
+    // 404
     return {
         code: 404,
         headers: [

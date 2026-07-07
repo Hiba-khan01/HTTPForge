@@ -100,6 +100,9 @@ function statusText(code: number): string {
         case 200:
             return "OK";
 
+        case 206:
+            return "Partial Content";
+
         case 400:
             return "Bad Request";
 
@@ -114,8 +117,9 @@ function statusText(code: number): string {
 
         case 501:
             return "Not Implemented";
-
+        
         default:
             return "Unknown";
+
     }
 }
